@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,6 +34,23 @@ app.get('/api/testimonials', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Serve the built React frontend (if present) and support SPA routing.
+// When running inside the Docker image the built client lives at ./client/dist.
+const staticDir = path.join(__dirname, '..', 'client', 'dist');
+
+if (fs.existsSync(staticDir)) {
+  app.use(express.static(staticDir));
+
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+    res.sendFile(path.join(staticDir, 'index.html'));
+  });
+
+  console.log(`Serving static frontend from ${staticDir}`);
+} else if (!process.env.CLIENT_DIST) {
+  console.log('No built frontend found - API-only mode (frontend served via Vite dev server).');
+}
 
 app.listen(PORT, () => {
   console.log(`LuxStay API server running on port ${PORT}`);

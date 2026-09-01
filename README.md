@@ -120,8 +120,11 @@ Navigate to **http://localhost:5173**
 ```
 hotel-booking-system-nodejs/
 ├── package.json              # root scripts (concurrently)
+├── Dockerfile                # multi-stage build -> single production image
+├── docker-compose.yml        # one-command container run
+├── .dockerignore
 ├── server/
-│   ├── index.js              # Express app entry
+│   ├── index.js              # Express app entry (also serves built client)
 │   ├── data/
 │   │   └── mockData.js       # hotels, users, bookings, reviews data
 │   ├── middleware/
@@ -174,3 +177,41 @@ hotel-booking-system-nodejs/
 - Data is stored in memory and resets when the server restarts.
 - Hotel images are loaded from Unsplash.
 - This is a UI/demo-focused application; no production database is used.
+
+## Docker
+
+The included `Dockerfile` builds a single production image that serves both the compiled React frontend and the Node.js API on one port (5000). It uses a multi-stage build:
+
+1. **client-build** — builds the React app with Vite into static files
+2. **server-deps** — installs only production backend dependencies
+3. **runtime** — copies the built frontend + backend and runs the Express server, which serves the SPA (with deep-link routing) and `/api/*` together
+
+### Prerequisites
+- [Docker](https://www.docker.com/get-started) + Docker Compose
+
+### Build & run with Docker Compose
+
+```bash
+docker compose up --build
+```
+
+Then open **http://localhost:5000**
+
+### Or build/run manually
+
+```bash
+# Build the image
+docker build -t luxstay-hotel-booking .
+
+# Run the container
+docker run -d --name luxstay-app -p 5000:5000 luxstay-hotel-booking
+```
+
+### Useful commands
+
+```bash
+docker compose up -d --build   # build + run in background
+docker compose logs -f app     # follow app logs
+docker compose down            # stop and remove containers
+docker compose build           # rebuild image without starting
+```
