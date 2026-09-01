@@ -1,0 +1,15 @@
+{
+  "name": "hotel-booking-system",
+  "version": "1.0.0",
+  "description": "Full-stack Hotel Booking System with React.js, Node.js, and Tailwind CSS",
+  "private": true,
+  "scripts": {
+    "server": "cd server && node index.js",
+    "client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
